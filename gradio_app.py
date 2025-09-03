@@ -37,7 +37,7 @@ def process_inputs(audio_filepath, image_filepath):
     return speech_to_text_output, doctor_response, voice_of_doctor
 
 
-# CSS Styling for Dark Mode
+# CSS Styling for Dark Mode + Custom Footer
 custom_css = """
 body {
     background: #313131;
@@ -61,6 +61,13 @@ body {
 }
 footer {display: none !important;}  /* remove Gradio footer */
 label {font-size: 1.1rem !important;}
+#custom-footer {
+    text-align: center;
+    margin-top: 25px;
+    font-size: 1rem;
+    font-family: 'Courier New', monospace;
+    color: #f28c28;
+}
 """
 
 with gr.Blocks(css=custom_css, title="MedAI-DPaP Multimodal LLM") as demo:
@@ -99,5 +106,8 @@ with gr.Blocks(css=custom_css, title="MedAI-DPaP Multimodal LLM") as demo:
         inputs=[audio_input, image_input],
         outputs=[stt_output, doctor_output, voice_output]
     )
+
+    # Custom Footer
+    gr.HTML('<div id="custom-footer">Made with ❤️ by Nishit</div>')
 
 demo.launch(debug=True)
