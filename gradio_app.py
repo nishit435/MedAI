@@ -3,7 +3,16 @@ import gradio as gr
 
 from brain_of_the_doctor import encode_image, analyze_image_with_query
 from voice_of_the_patient import record_audio, transcribe_with_groq
-from voice_of_the_doctor import text_to_speech_with_gtts, text_to_speech_with_elevenlabs
+from voice_of_the_doctor import text_to_speech_with_gtts
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+if not os.environ.get("GROQ_API_KEY"):
+    raise ValueError("GROQ_API_KEY not found in environment variables. Check your .env file.")
+
+
+
 
 system_prompt = """You have to act as a professional doctor, i know you are not but this is for learning purpose. 
             What's in this image?. Do you find anything wrong with it medically? 
@@ -12,6 +21,7 @@ system_prompt = """You have to act as a professional doctor, i know you are not 
             Donot say 'In the image I see' but say 'With what I see, I think you have ....'
             Dont respond as an AI model in markdown, your answer should mimic that of an actual doctor not an AI bot, 
             Keep your answer concise (max 2 sentences). No preamble, start your answer right away please"""
+
 
 def process_inputs(audio_filepath, image_filepath):
     speech_to_text_output = transcribe_with_groq(
@@ -29,13 +39,12 @@ def process_inputs(audio_filepath, image_filepath):
     else:
         doctor_response = "No image provided for me to analyze"
 
-    voice_of_doctor = text_to_speech_with_elevenlabs(
+    voice_of_doctor = text_to_speech_with_gtts(  # Changed from elevenlabs to gtts
         input_text=doctor_response,
         output_filepath="final.mp3"
     )
 
     return speech_to_text_output, doctor_response, voice_of_doctor
-
 
 # CSS Styling for Dark Mode + Custom Footer
 custom_css = """
@@ -111,3 +120,4 @@ with gr.Blocks(css=custom_css, title="MedAI-DPaP Multimodal LLM") as demo:
     gr.HTML('<div id="custom-footer">Made with ❤️ by Nishit</div>')
 
 demo.launch(debug=True)
+
