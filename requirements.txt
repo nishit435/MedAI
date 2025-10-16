@@ -5,7 +5,6 @@ certifi==2024.12.14
 charset-normalizer==3.4.1
 click==8.1.8
 distro==1.9.0
-elevenlabs==1.50.3
 fastapi==0.115.6
 ffmpy==0.5.0
 filelock==3.16.1
@@ -28,7 +27,6 @@ orjson==3.10.14
 packaging==24.2
 pandas==2.2.3
 pillow==11.1.0
-pyaudio==0.2.14
 pydantic==2.10.5
 pydantic-core==2.27.2
 pydub==0.25.1
