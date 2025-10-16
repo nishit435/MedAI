@@ -22,30 +22,40 @@ system_prompt = """You have to act as a professional doctor, i know you are not 
             Dont respond as an AI model in markdown, your answer should mimic that of an actual doctor not an AI bot, 
             Keep your answer concise (max 2 sentences). No preamble, start your answer right away please"""
 
-
 def process_inputs(audio_filepath, image_filepath):
-    speech_to_text_output = transcribe_with_groq(
-        GROQ_API_KEY=os.environ.get("GROQ_API_KEY"), 
-        audio_filepath=audio_filepath,
-        stt_model="whisper-large-v3"
-    )
-
-    if image_filepath:
-        doctor_response = analyze_image_with_query(
-            query=system_prompt + speech_to_text_output,
-            encoded_image=encode_image(image_filepath),
-            model="meta-llama/llama-4-scout-17b-16e-instruct"
+    try:
+        # Validate inputs
+        if audio_filepath is None:
+            return "No audio recorded", "Please record your question first", None
+            
+        # Process audio
+        speech_to_text_output = transcribe_with_groq(
+            GROQ_API_KEY=os.environ.get("GROQ_API_KEY"), 
+            audio_filepath=audio_filepath,
+            stt_model="whisper-large-v3"
         )
-    else:
-        doctor_response = "No image provided for me to analyze"
 
-    voice_of_doctor = text_to_speech_with_gtts(  # Changed from elevenlabs to gtts
-        input_text=doctor_response,
-        output_filepath="final.mp3"
-    )
+        # Process image and generate response
+        if image_filepath is not None:
+            doctor_response = analyze_image_with_query(
+                query=system_prompt + speech_to_text_output,
+                encoded_image=encode_image(image_filepath),
+                model="meta-llama/llama-4-scout-17b-16e-instruct"
+            )
+        else:
+            doctor_response = "No image provided for me to analyze"
 
-    return speech_to_text_output, doctor_response, voice_of_doctor
+        # Generate audio response
+        voice_of_doctor = text_to_speech_with_gtts(
+            input_text=doctor_response,
+            output_filepath="final.mp3"
+        )
 
+        return speech_to_text_output, doctor_response, voice_of_doctor
+        
+    except Exception as e:
+        print(f"Error in process_inputs: {str(e)}")  # For debugging
+        return "Error processing input", f"An error occurred: {str(e)}", None
 # CSS Styling for Dark Mode + Custom Footer
 custom_css = """
 body {
@@ -112,12 +122,26 @@ with gr.Blocks(css=custom_css, title="MedAI-DPaP Multimodal LLM") as demo:
 
     submit_btn.click(
         fn=process_inputs,
-        inputs=[audio_input, image_input],
-        outputs=[stt_output, doctor_output, voice_output]
+            inputs=[
+                audio_input,  # Must match the order of process_inputs parameters
+                image_input
+            ],
+            outputs=[
+                stt_output,
+                doctor_output,
+                voice_output
+            ],
+            api_name="analyze",
+            show_progress=True
     )
 
     # Custom Footer
     gr.HTML('<div id="custom-footer">Made with ❤️ by Nishit</div>')
-
+demo.queue(concurrency_count=1)
+demo.launch(
+    debug=True,
+    server_name="0.0.0.0",
+    server_port=7860
+)
 demo.launch(debug=True)
 
