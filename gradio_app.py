@@ -137,11 +137,11 @@ with gr.Blocks(css=custom_css, title="MedAI-DPaP Multimodal LLM") as demo:
 
     # Custom Footer
     gr.HTML('<div id="custom-footer">Made with ❤️ by Nishit</div>')
-demo.queue(concurrency_count=1)
+
+demo.queue()
 demo.launch(
     debug=True,
     server_name="0.0.0.0",
     server_port=7860
 )
-demo.launch(debug=True)
 
